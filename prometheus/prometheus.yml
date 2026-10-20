@@ -2,17 +2,15 @@ global:
   scrape_interval: 5s
   evaluation_interval: 5s
 
-# Alerting rules
 rule_files:
   - "alert.rules.yml"
 
-# Scrape targets
 scrape_configs:
   # 1. Placement System Flask App
   - job_name: "placement-app"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["placement-app:5000"]
+      - targets: ["app:5000", "placement-app:5000"]
         labels:
           environment: "production"
           app: "online-placement-system"

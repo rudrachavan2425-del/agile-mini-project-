@@ -4,7 +4,7 @@ services:
   # ---------------------------------------------------------
   # 1. Online Placement System (Flask Application)
   # ---------------------------------------------------------
-  placement-app:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -45,7 +45,7 @@ services:
       - '--web.console.templates=/usr/share/prometheus/consoles'
       - '--web.enable-lifecycle'
     depends_on:
-      - placement-app
+      - app
     networks:
       - devops-network
 
@@ -83,6 +83,23 @@ services:
     networks:
       - devops-network
 
+  # ---------------------------------------------------------
+  # 5. Jenkins CI/CD Automation Server
+  # ---------------------------------------------------------
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: unless-stopped
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - devops-network
+
 networks:
   devops-network:
     driver: bridge
@@ -90,3 +107,4 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
+  jenkins_data:
