@@ -1,0 +1,46 @@
+groups:
+  - name: placement_devops_alerts
+    rules:
+      # 1. High CPU Usage Alert (> 80%)
+      - alert: HighCPUUsage
+        expr: system_cpu_usage_percent > 80
+        for: 10s
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Host CPU Usage exceeded 80% (Current: {{ $value }}%)"
+          description: "CPU load on the placement server has crossed the 80% safety threshold."
+
+      # 2. Application Down Alert
+      - alert: AppDown
+        expr: up{job="placement-app"} == 0 or placement_app_health_status == 0
+        for: 10s
+        labels:
+          severity: critical
+          component: web-service
+        annotations:
+          summary: "Online Placement System is DOWN!"
+          description: "The Placement Management web service container is unreachable or responding with failure."
+
+      # 3. High HTTP 500 Error Rate Alert
+      - alert: HighHttpErrorRate
+        expr: rate(flask_http_requests_total{status=~"5.."}[1m]) > 0.1
+        for: 10s
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "Elevated HTTP 5xx Server Errors detected"
+          description: "Multiple server internal errors observed in placement portal endpoints."
+
+      # 4. High Request Latency Alert
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, sum(rate(flask_http_request_duration_seconds_bucket[1m])) by (le)) > 1.5
+        for: 15s
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "High P95 Response Latency (> 1.5 seconds)"
+          description: "Response latency on placement application endpoints is degrading."

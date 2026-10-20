@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Online Placement System{% endblock %} | DevOps Pipeline</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-theme">
+    <!-- Top Decorative Glow -->
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar-wrapper">
+        <nav class="navbar container">
+            <a href="{{ url_for('home') }}" class="brand-logo">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">Campus<span class="gradient-text">Nexus</span></span>
+                    <span class="brand-subtitle">Placement & DevOps Portal</span>
+                </div>
+            </a>
+
+            <div class="nav-links" id="navLinks">
+                <a href="{{ url_for('home') }}" class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+                <a href="{{ url_for('drives') }}" class="nav-item {% if request.endpoint in ['drives', 'drive_detail'] %}active{% endif %}">
+                    <i class="fa-solid fa-briefcase"></i> Job Drives
+                </a>
+                <a href="{{ url_for('students') }}" class="nav-item {% if request.endpoint == 'students' %}active{% endif %}">
+                    <i class="fa-solid fa-user-graduate"></i> Candidates
+                </a>
+                <a href="{{ url_for('applications') }}" class="nav-item {% if request.endpoint == 'applications' %}active{% endif %}">
+                    <i class="fa-solid fa-list-check"></i> Applications
+                </a>
+                <a href="{{ url_for('devops_panel') }}" class="nav-item devops-pill {% if request.endpoint == 'devops_panel' %}active{% endif %}">
+                    <i class="fa-solid fa-server"></i> DevOps Lab <span class="badge-pulse"></span>
+                </a>
+            </div>
+
+            <div class="nav-actions">
+                <div class="system-status-indicator" title="Monitored via Prometheus & Grafana">
+                    <span class="status-dot"></span>
+                    <span class="status-label">HEALTH: OPTIMAL</span>
+                </div>
+                <a href="{{ url_for('add_drive') }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Add Drive
+                </a>
+                <button class="mobile-toggle" id="mobileMenuBtn" aria-label="Toggle navigation">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="toast-container">
+                    {% for category, message in messages %}
+                        <div class="toast-alert toast-{{ category }}">
+                            <div class="toast-icon">
+                                {% if category == 'success' %}
+                                    <i class="fa-solid fa-circle-check"></i>
+                                {% elif category == 'danger' %}
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-info"></i>
+                                {% endif %}
+                            </div>
+                            <div class="toast-message">{{ message }}</div>
+                            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-wrapper">
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <div class="brand-title">CampusNexus <span class="badge-tech">DevOps Edition</span></div>
+                <p class="footer-desc">End-to-End Automated CI/CD Pipeline with Python Flask, PyTest, Docker, Jenkins, Prometheus & Grafana.</p>
+            </div>
+            <div class="footer-tech-stack">
+                <span class="tech-tag"><i class="fa-brands fa-python"></i> Python 3.12</span>
+                <span class="tech-tag"><i class="fa-solid fa-flask"></i> Flask</span>
+                <span class="tech-tag"><i class="fa-brands fa-docker"></i> Docker</span>
+                <span class="tech-tag"><i class="fa-brands fa-jenkins"></i> Jenkins CI/CD</span>
+                <span class="tech-tag"><i class="fa-solid fa-chart-line"></i> Prometheus</span>
+                <span class="tech-tag"><i class="fa-solid fa-chart-pie"></i> Grafana</span>
+            </div>
+            <div class="footer-links">
+                <a href="{{ url_for('health_check') }}" target="_blank"><i class="fa-solid fa-heart-pulse"></i> /health</a>
+                <a href="{{ url_for('metrics') }}" target="_blank"><i class="fa-solid fa-chart-simple"></i> /metrics</a>
+                <a href="{{ url_for('devops_panel') }}"><i class="fa-solid fa-sliders"></i> SRE Controls</a>
+            </div>
+        </div>
+        <div class="footer-bottom container">
+            <span>&copy; 2026 Campus Placement Automation &bull; Mini-Project DevOps Pipeline</span>
+            <span class="build-version">Pipeline Version: v1.0.4-prod &bull; Status: <span class="text-success">Passing</span></span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

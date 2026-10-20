@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Application Pipeline | Placement Tracking{% endblock %}
+
+{% block content %}
+<div class="applications-page">
+    <div class="page-header">
+        <div>
+            <div class="section-tag"><i class="fa-solid fa-list-check"></i> Recruitment Funnel</div>
+            <h1 class="page-title">Application <span class="gradient-text">Pipeline</span></h1>
+            <p class="page-subtitle">Track candidate applications through every evaluation stage: from submission to final offer.</p>
+        </div>
+        <div class="page-actions">
+            <span class="badge-tech"><i class="fa-solid fa-bolt"></i> Total Submissions: {{ applications|length }}</span>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="applications-card glass-panel">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Roll / USN</th>
+                        <th>Target Company</th>
+                        <th>Branch</th>
+                        <th>CGPA</th>
+                        <th>Applied On</th>
+                        <th>Current Stage</th>
+                        <th>Update Stage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                        <tr>
+                            <td><code>#APP-{{ app.id }}</code></td>
+                            <td><strong>{{ app.student_name }}</strong></td>
+                            <td><code>{{ app.usn }}</code></td>
+                            <td>
+                                <span class="company-tag"><i class="fa-regular fa-building"></i> {{ app.company }}</span>
+                            </td>
+                            <td><span class="branch-pill">{{ app.branch }}</span></td>
+                            <td><strong>{{ app.cgpa }}</strong></td>
+                            <td class="text-muted small">{{ app.applied_on }}</td>
+                            <td>
+                                <span class="status-pill status-pill-sm status-{{ app.status.lower().replace(' ', '-') }}">
+                                    {{ app.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('update_application_status', app_id=app.id) }}" class="inline-status-form">
+                                    <select name="status" class="form-control select-xs" onchange="this.form.submit()">
+                                        <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                                        <option value="Test Scheduled" {% if app.status == 'Test Scheduled' %}selected{% endif %}>Test Scheduled</option>
+                                        <option value="Technical Round" {% if app.status == 'Technical Round' %}selected{% endif %}>Technical Round</option>
+                                        <option value="HR Round" {% if app.status == 'HR Round' %}selected{% endif %}>HR Round</option>
+                                        <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected (Offer)</option>
+                                        <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                    </select>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

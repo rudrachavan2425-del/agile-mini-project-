@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Post New Placement Drive | Campus Recruitment{% endblock %}
+
+{% block content %}
+<div class="form-page-container">
+    <div class="breadcrumb-nav">
+        <a href="{{ url_for('drives') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to all drives</a>
+    </div>
+
+    <div class="form-card glass-panel">
+        <div class="form-header">
+            <div class="section-tag"><i class="fa-solid fa-plus"></i> New Opportunity</div>
+            <h1 class="form-title">Register Placement <span class="gradient-text">Drive</span></h1>
+            <p class="form-subtitle">Create a corporate hiring profile and publish it across eligible student batches.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('add_drive') }}" class="standard-form">
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label class="form-label">Company Name *</label>
+                    <input type="text" name="company" class="form-control" placeholder="e.g. NVIDIA, Intel, Atlassian" required>
+                </div>
+                <div class="form-group form-col">
+                    <label class="form-label">Job Role / Designation *</label>
+                    <input type="text" name="role" class="form-control" placeholder="e.g. Cloud Systems Engineer" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label class="form-label">Compensation Package (CTC in LPA) *</label>
+                    <input type="number" step="0.1" name="ctc" class="form-control" placeholder="e.g. 24.5" required>
+                </div>
+                <div class="form-group form-col">
+                    <label class="form-label">Minimum CGPA Requirement *</label>
+                    <input type="number" step="0.01" min="0" max="10" name="min_cgpa" class="form-control" placeholder="e.g. 7.50" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Eligible Branches (comma separated) *</label>
+                <input type="text" name="branches" class="form-control" value="CSE, IT, ECE" placeholder="e.g. CSE, IT, ECE, EE" required>
+                <small class="form-hint">Enter branches allowed to register for this drive.</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label class="form-label">Application Deadline *</label>
+                    <input type="date" name="deadline" class="form-control" required value="2026-12-15">
+                </div>
+                <div class="form-group form-col">
+                    <label class="form-label">Drive / Interview Date *</label>
+                    <input type="date" name="drive_date" class="form-control" required value="2026-12-20">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-col">
+                    <label class="form-label">Job Location</label>
+                    <input type="text" name="location" class="form-control" value="Bengaluru / Hybrid" placeholder="e.g. Bengaluru, Hyderabad">
+                </div>
+                <div class="form-group form-col">
+                    <label class="form-label">Initial Drive Status</label>
+                    <select name="status" class="form-control">
+                        <option value="Active" selected>Active (Open for applications)</option>
+                        <option value="In-Progress">In-Progress</option>
+                        <option value="Upcoming">Upcoming (Announced)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Job Description & Responsibilities</label>
+                <textarea name="description" rows="4" class="form-control" placeholder="Detail the technical responsibilities, skills required, interview process..."></textarea>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('drives') }}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Publish Placement Drive
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

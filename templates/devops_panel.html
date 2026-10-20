@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}DevOps & SRE Live Lab | Chaos Testing & Monitoring{% endblock %}
+
+{% block content %}
+<div class="devops-page">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <div class="section-tag sre-tag"><i class="fa-solid fa-server"></i> DevOps Control Cockpit</div>
+            <h1 class="page-title">SRE Monitoring & <span class="gradient-text">Chaos Lab</span></h1>
+            <p class="page-subtitle">Real-time telemetry, Prometheus metrics exporter, Grafana integration, and automated alert triggering for Viva demonstration.</p>
+        </div>
+        <div class="page-actions">
+            <span class="badge-tech"><i class="fa-solid fa-circle-nodes"></i> Docker Compose Cluster</span>
+        </div>
+    </div>
+
+    <!-- Live Telemetry Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card card-glow-indigo">
+            <div class="metric-header">
+                <span class="metric-title">Live Host CPU</span>
+                <div class="metric-icon"><i class="fa-solid fa-microchip"></i></div>
+            </div>
+            <div class="metric-value" id="liveCpuVal">{{ stats.cpu_percent }}%</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="liveCpuBar" style="width: {{ stats.cpu_percent }}%;"></div>
+            </div>
+            <div class="metric-subtext">Alert Threshold: <strong>&gt; 80%</strong></div>
+        </div>
+
+        <div class="metric-card card-glow-emerald">
+            <div class="metric-header">
+                <span class="metric-title">Live Memory Usage</span>
+                <div class="metric-icon"><i class="fa-solid fa-memory"></i></div>
+            </div>
+            <div class="metric-value" id="liveMemVal">{{ stats.mem_percent }}%</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill progress-emerald" id="liveMemBar" style="width: {{ stats.mem_percent }}%;"></div>
+            </div>
+            <div class="metric-subtext">Scraped via Prometheus Node Exporter</div>
+        </div>
+
+        <div class="metric-card card-glow-violet">
+            <div class="metric-header">
+                <span class="metric-title">App Health State</span>
+                <div class="metric-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+            </div>
+            <div class="metric-value">
+                <span id="liveHealthPill" class="status-pill {% if stats.is_healthy %}status-active{% else %}status-danger{% endif %}">
+                    {% if stats.is_healthy %}UP (200 OK){% else %}DOWN (503 Service Unavailable){% endif %}
+                </span>
+            </div>
+            <div class="metric-subtext">Endpoint: <code>/health</code></div>
+        </div>
+
+        <div class="metric-card card-glow-cyan">
+            <div class="metric-header">
+                <span class="metric-title">Prometheus Metrics</span>
+                <div class="metric-icon"><i class="fa-solid fa-chart-line"></i></div>
+            </div>
+            <div class="metric-value text-info">Exposing</div>
+            <div class="metric-subtext">
+                <a href="{{ url_for('metrics') }}" target="_blank" class="text-accent">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> View /metrics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chaos Testing Section for Viva Demo -->
+    <div class="chaos-section glass-panel mt-4">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title text-warning"><i class="fa-solid fa-triangle-exclamation"></i> Viva Demonstration: Alert Triggering Engine</h3>
+                <p class="card-subtitle">Use these live controls to generate abnormal system conditions and demonstrate real-time alerts in Prometheus & Grafana (PDF Steps 11 & 12).</p>
+            </div>
+            <span class="alert-status-badge" id="chaosFeedbackBadge">Ready for Simulation</span>
+        </div>
+
+        <div class="chaos-buttons-grid">
+            <!-- CPU Spike -->
+            <div class="chaos-card">
+                <div class="chaos-card-icon"><i class="fa-solid fa-fire"></i></div>
+                <h4>Trigger CPU Load (&gt; 80%)</h4>
+                <p>Launches a high-intensity computational stress thread for 15 seconds to spike CPU usage and trigger the <code>HighCPUUsage</code> Grafana/Prometheus alert rule.</p>
+                <button id="btnCpuLoad" class="btn btn-warning btn-block" onclick="triggerCpuLoad()">
+                    <i class="fa-solid fa-bolt"></i> Simulate CPU Spike
+                </button>
+            </div>
+
+            <!-- 500 Error Spike -->
+            <div class="chaos-card">
+                <div class="chaos-card-icon"><i class="fa-solid fa-bug"></i></div>
+                <h4>Simulate HTTP 500 Spike</h4>
+                <p>Generates 15 consecutive HTTP 500 error responses to simulate downstream service failures and trigger the <code>HighErrorRate</code> alert rule.</p>
+                <button id="btnErrorSpike" class="btn btn-danger btn-block" onclick="triggerErrorSpike()">
+                    <i class="fa-solid fa-burst"></i> Fire 500 Error Spike
+                </button>
+            </div>
+
+            <!-- Toggle App Down -->
+            <div class="chaos-card">
+                <div class="chaos-card-icon"><i class="fa-solid fa-power-off"></i></div>
+                <h4>Toggle App Health (Simulate DOWN)</h4>
+                <p>Switches application health status to 503 Service Unavailable to trigger the critical <code>AppDown</code> Prometheus alert rule immediately.</p>
+                <button id="btnToggleHealth" class="btn btn-outline btn-block" onclick="toggleAppHealth()">
+                    <i class="fa-solid fa-toggle-on"></i> Toggle Health (UP / DOWN)
+                </button>
+            </div>
+        </div>
+
+        <div id="chaosOutputBox" class="chaos-output-box mt-3" style="display: none;">
+            <i class="fa-solid fa-terminal"></i> <span id="chaosOutputText"></span>
+        </div>
+    </div>
+
+    <!-- Quick Links & Pipeline Architecture -->
+    <div class="devops-dual-row mt-4">
+        <!-- Quick Access Portals -->
+        <div class="glass-panel portals-card">
+            <h3 class="card-title"><i class="fa-solid fa-network-wired"></i> DevOps Service Endpoints</h3>
+            <div class="portals-list">
+                <a href="http://localhost:3000" target="_blank" class="portal-link">
+                    <div class="portal-icon grafana-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="portal-text">
+                        <strong>Grafana Dashboards</strong>
+                        <span>http://localhost:3000 (admin / admin)</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square portal-ext"></i>
+                </a>
+
+                <a href="http://localhost:9090" target="_blank" class="portal-link">
+                    <div class="portal-icon prometheus-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="portal-text">
+                        <strong>Prometheus Targets & Metrics</strong>
+                        <span>http://localhost:9090/targets</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square portal-ext"></i>
+                </a>
+
+                <a href="http://localhost:9090/alerts" target="_blank" class="portal-link">
+                    <div class="portal-icon alert-icon"><i class="fa-solid fa-bell"></i></div>
+                    <div class="portal-text">
+                        <strong>Prometheus Active Alert Rules</strong>
+                        <span>http://localhost:9090/alerts</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square portal-ext"></i>
+                </a>
+
+                <a href="http://localhost:8080" target="_blank" class="portal-link">
+                    <div class="portal-icon jenkins-icon"><i class="fa-brands fa-jenkins"></i></div>
+                    <div class="portal-text">
+                        <strong>Jenkins CI/CD Server</strong>
+                        <span>http://localhost:8080</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square portal-ext"></i>
+                </a>
+
+                <a href="{{ url_for('metrics') }}" target="_blank" class="portal-link">
+                    <div class="portal-icon metric-raw-icon"><i class="fa-solid fa-code"></i></div>
+                    <div class="portal-text">
+                        <strong>Prometheus Raw Exposition</strong>
+                        <span>/metrics (Scraped every 5s)</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-up-right-from-square portal-ext"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Pipeline Stages Overview -->
+        <div class="glass-panel pipeline-card">
+            <h3 class="card-title"><i class="fa-solid fa-diagram-project"></i> Complete CI/CD Pipeline Workflow</h3>
+            <div class="pipeline-steps">
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">1</div>
+                    <div class="step-details">
+                        <strong>Checkout</strong>
+                        <span>Git version control & GitHub Webhook trigger</span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">2</div>
+                    <div class="step-details">
+                        <strong>Install Dependencies</strong>
+                        <span><code>pip install -r requirements.txt</code></span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">3</div>
+                    <div class="step-details">
+                        <strong>Automated Testing (PyTest)</strong>
+                        <span>Unit & API tests execute (<code>pytest test_app.py</code>)</span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">4</div>
+                    <div class="step-details">
+                        <strong>Docker Build</strong>
+                        <span>Multi-stage lightweight container packaging</span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">5</div>
+                    <div class="step-details">
+                        <strong>Docker Registry Push</strong>
+                        <span>Push image to Docker Hub repository</span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">6</div>
+                    <div class="step-details">
+                        <strong>Deployment</strong>
+                        <span>Containerized runtime deployed on port 5000</span>
+                    </div>
+                </div>
+                <div class="pipeline-step step-complete">
+                    <div class="step-badge">7</div>
+                    <div class="step-details">
+                        <strong>Prometheus & Grafana Monitoring</strong>
+                        <span>Real-time scraping, dashboard visualization & alert rules</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Live Polling of System Telemetry
+    function pollTelemetry() {
+        fetch('/api/stats')
+            .then(res => res.json())
+            .then(data => {
+                const cpu = data.stats.cpu_percent;
+                const mem = data.stats.mem_percent;
+                const healthy = data.stats.is_healthy;
+
+                document.getElementById('liveCpuVal').innerText = cpu + '%';
+                document.getElementById('liveCpuBar').style.width = Math.min(cpu, 100) + '%';
+                
+                document.getElementById('liveMemVal').innerText = mem + '%';
+                document.getElementById('liveMemBar').style.width = Math.min(mem, 100) + '%';
+
+                const pill = document.getElementById('liveHealthPill');
+                if (healthy) {
+                    pill.className = 'status-pill status-active';
+                    pill.innerText = 'UP (200 OK)';
+                } else {
+                    pill.className = 'status-pill status-danger';
+                    pill.innerText = 'DOWN (503 Alert Triggered)';
+                }
+            })
+            .catch(err => console.error("Telemetry poll failed:", err));
+    }
+
+    setInterval(pollTelemetry, 3000);
+
+    function showOutput(msg, isSuccess = true) {
+        const box = document.getElementById('chaosOutputBox');
+        const text = document.getElementById('chaosOutputText');
+        box.style.display = 'block';
+        text.innerText = msg;
+        text.style.color = isSuccess ? '#10b981' : '#f59e0b';
+    }
+
+    function triggerCpuLoad() {
+        const btn = document.getElementById('btnCpuLoad');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Spinning CPU...';
+        btn.disabled = true;
+
+        fetch('/api/chaos/cpu-load', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                showOutput(data.message);
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fa-solid fa-bolt"></i> Simulate CPU Spike';
+                    btn.disabled = false;
+                }, 16000);
+            })
+            .catch(err => {
+                showOutput('Failed to trigger CPU stress test.', false);
+                btn.disabled = false;
+            });
+    }
+
+    function triggerErrorSpike() {
+        const btn = document.getElementById('btnErrorSpike');
+        btn.disabled = true;
+
+        fetch('/api/chaos/error-spike', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                showOutput(data.message);
+                btn.disabled = false;
+            })
+            .catch(err => {
+                showOutput('Failed to trigger error spike.', false);
+                btn.disabled = false;
+            });
+    }
+
+    function toggleAppHealth() {
+        fetch('/api/chaos/toggle-health', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                showOutput(data.message);
+                pollTelemetry();
+            })
+            .catch(err => {
+                showOutput('Failed to toggle app health.', false);
+            });
+    }
+</script>
+{% endblock %}

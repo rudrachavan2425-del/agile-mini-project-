@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ drive.company }} - {{ drive.role }} | Placement Drive{% endblock %}
+
+{% block content %}
+<div class="drive-detail-container">
+    <!-- Breadcrumb & Back -->
+    <div class="breadcrumb-nav">
+        <a href="{{ url_for('drives') }}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to all drives</a>
+    </div>
+
+    <!-- Drive Hero Banner -->
+    <div class="detail-header-card glass-panel" style="border-top: 4px solid {{ drive.logo_color }};">
+        <div class="detail-header-main">
+            <div class="company-logo-large" style="background: {{ drive.logo_color }}1a; color: {{ drive.logo_color }}; border-color: {{ drive.logo_color }}55;">
+                {{ drive.company[:2].upper() }}
+            </div>
+            <div class="detail-title-group">
+                <div class="company-meta-row">
+                    <h1 class="company-title-main">{{ drive.company }}</h1>
+                    <span class="status-pill status-{{ drive.status.lower() }}">{{ drive.status }}</span>
+                </div>
+                <h2 class="drive-role-subtitle">{{ drive.role }}</h2>
+                <div class="drive-header-tags">
+                    <span><i class="fa-solid fa-location-dot"></i> {{ drive.location }}</span>
+                    <span><i class="fa-regular fa-calendar"></i> Drive: {{ drive.drive_date }}</span>
+                    <span class="text-warning"><i class="fa-solid fa-hourglass-half"></i> Apply by: {{ drive.deadline }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-package-badge">
+            <span class="badge-sub">Compensation Package</span>
+            <span class="badge-ctc">{{ drive.ctc }} <span class="ctc-unit">LPA</span></span>
+        </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="detail-grid">
+        <!-- Left: Job Details & Criteria -->
+        <div class="detail-main-col">
+            <!-- Job Description -->
+            <div class="detail-section-card glass-panel">
+                <h3 class="section-heading"><i class="fa-solid fa-file-lines"></i> Role Overview & Scope</h3>
+                <p class="description-text">{{ drive.description }}</p>
+                
+                <h4 class="sub-heading mt-4">Key Responsibilities</h4>
+                <ul class="check-list">
+                    <li>Collaborate with cross-functional engineering teams to architect scalable services.</li>
+                    <li>Participate in agile sprints, code reviews, automated testing, and CI/CD releases.</li>
+                    <li>Troubleshoot system bottlenecks, monitor application performance, and optimize latency.</li>
+                    <li>Adhere to enterprise security standards, code quality metrics, and best practices.</li>
+                </ul>
+            </div>
+
+            <!-- Eligibility Checklist -->
+            <div class="detail-section-card glass-panel">
+                <h3 class="section-heading"><i class="fa-solid fa-graduation-cap"></i> Eligibility Criteria</h3>
+                <div class="eligibility-boxes">
+                    <div class="eligibility-box">
+                        <span class="el-label">Minimum CGPA Required</span>
+                        <span class="el-val text-accent">{{ drive.min_cgpa }} / 10.0</span>
+                    </div>
+                    <div class="eligibility-box">
+                        <span class="el-label">Eligible Engineering Branches</span>
+                        <div class="branch-pill-list">
+                            {% for b in drive.eligible_branches %}
+                                <span class="branch-pill">{{ b }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="eligibility-box">
+                        <span class="el-label">Allowed Active Backlogs</span>
+                        <span class="el-val">0 (Strictly No Standing Arrears)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicants Table -->
+            <div class="detail-section-card glass-panel">
+                <div class="card-header">
+                    <h3 class="section-heading"><i class="fa-solid fa-users"></i> Registered Applicants ({{ applicants|length }})</h3>
+                </div>
+                {% if applicants %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>USN</th>
+                                    <th>Branch</th>
+                                    <th>CGPA</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for app in applicants %}
+                                    <tr>
+                                        <td><strong>{{ app.student_name }}</strong></td>
+                                        <td><code>{{ app.usn }}</code></td>
+                                        <td><span class="branch-pill">{{ app.branch }}</span></td>
+                                        <td>{{ app.cgpa }}</td>
+                                        <td>
+                                            <span class="status-pill status-pill-sm status-{{ app.status.lower().replace(' ', '-') }}">
+                                                {{ app.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('update_application_status', app_id=app.id) }}" class="inline-status-form">
+                                                <select name="status" class="form-control select-xs" onchange="this.form.submit()">
+                                                    <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+                                                    <option value="Test Scheduled" {% if app.status == 'Test Scheduled' %}selected{% endif %}>Test Scheduled</option>
+                                                    <option value="Technical Round" {% if app.status == 'Technical Round' %}selected{% endif %}>Technical Round</option>
+                                                    <option value="HR Round" {% if app.status == 'HR Round' %}selected{% endif %}>HR Round</option>
+                                                    <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected</option>
+                                                    <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state-sm">
+                        <p>No candidates have applied yet. Be the first to register!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Apply Form & Administration -->
+        <div class="detail-sidebar-col">
+            <!-- Apply Card -->
+            <div class="apply-card glass-panel">
+                <h3 class="card-title"><i class="fa-solid fa-paper-plane"></i> Apply for this Drive</h3>
+                <p class="card-subtitle">Submit your candidate profile directly into the recruiter pipeline.</p>
+                
+                <form method="POST" action="{{ url_for('apply_drive', drive_id=drive.id) }}">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="student_name" class="form-control" required placeholder="Aarav Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">University Roll / USN</label>
+                        <input type="text" name="usn" class="form-control" required placeholder="1MS21CS045">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Branch</label>
+                        <select name="branch" class="form-control">
+                            {% for b in drive.eligible_branches %}
+                                <option value="{{ b }}">{{ b }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current CGPA</label>
+                        <input type="number" step="0.01" min="0" max="10" name="cgpa" class="form-control" required placeholder="8.50">
+                        <small class="form-hint text-warning">Minimum required: {{ drive.min_cgpa }}</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa-solid fa-check"></i> Submit Application
+                    </button>
+                </form>
+            </div>
+
+            <!-- Management Box -->
+            <div class="admin-danger-box glass-panel mt-4">
+                <h4><i class="fa-solid fa-shield-halved"></i> Drive Management</h4>
+                <p class="text-muted small">Authorized Placement Officers only.</p>
+                <form method="POST" action="{{ url_for('delete_drive', drive_id=drive.id) }}" onsubmit="return confirm('Are you sure you want to delete this drive?');">
+                    <button type="submit" class="btn btn-danger btn-block btn-sm">
+                        <i class="fa-solid fa-trash"></i> Delete Drive
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Directory | Students{% endblock %}
+
+{% block content %}
+<div class="students-page">
+    <div class="page-header">
+        <div>
+            <div class="section-tag"><i class="fa-solid fa-user-graduate"></i> Enrolled Candidates</div>
+            <h1 class="page-title">Candidate <span class="gradient-text">Directory</span></h1>
+            <p class="page-subtitle">Manage campus candidates, CGPA records, technical skill stacks, and placement offers.</p>
+        </div>
+        <div class="page-stats-chips">
+            <span class="chip chip-success"><i class="fa-solid fa-check"></i> {{ stats.placed_students }} Placed</span>
+            <span class="chip chip-warning"><i class="fa-solid fa-hourglass-half"></i> {{ stats.total_students - stats.placed_students }} In Process</span>
+            <span class="chip chip-info"><i class="fa-solid fa-percent"></i> {{ stats.placement_rate }}% Rate</span>
+        </div>
+    </div>
+
+    <!-- Student Cards Grid -->
+    <div class="students-grid">
+        {% for student in students %}
+            <div class="student-card glass-panel">
+                <div class="student-card-top">
+                    <div class="student-avatar-wrap">
+                        <div class="student-avatar">{{ student.name[:2].upper() }}</div>
+                        <div>
+                            <h3 class="student-name">{{ student.name }}</h3>
+                            <span class="student-usn"><code>{{ student.usn }}</code> &bull; {{ student.branch }}</span>
+                        </div>
+                    </div>
+                    <span class="status-pill status-pill-sm status-{{ student.status.lower() }}">
+                        {{ student.status }}
+                    </span>
+                </div>
+
+                <div class="student-metrics-row">
+                    <div class="sm-item">
+                        <span class="sm-label">Cumulative CGPA</span>
+                        <span class="sm-value text-accent">{{ student.cgpa }}</span>
+                    </div>
+                    <div class="sm-item">
+                        <span class="sm-label">Placement Status</span>
+                        {% if student.status == 'Placed' %}
+                            <span class="sm-value text-success">{{ student.company }} ({{ student.package }} LPA)</span>
+                        {% else %}
+                            <span class="sm-value text-muted">Seeking Offers</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="student-skills">
+                    <span class="skills-label"><i class="fa-solid fa-code"></i> Skills:</span>
+                    <div class="skills-list">
+                        {% for skill in student.skills.split(',') %}
+                            <span class="skill-badge">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="student-footer">
+                    <a href="mailto:{{ student.email }}" class="contact-email">
+                        <i class="fa-regular fa-envelope"></i> {{ student.email }}
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
